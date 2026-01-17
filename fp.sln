@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileSenderRailway", "FileSenderRailway\FileSenderRailway.csproj", "{D979A1EA-516A-46BC-BE6C-8845CA10853D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ErrorHandling", "ErrorHandling\ErrorHandling.csproj", "{66FAF276-533D-4733-AB2E-A9905D678CF6}"
@@ -9,6 +10,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Summator", "Samples\Summator\Summator.csproj", "{C33F3A5E-A1ED-4657-9B35-968A4CB23AA1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConwaysGameOfLife", "Samples\ConwaysGameOfLife\ConwaysGameOfLife.csproj", "{4B77EC28-5FB5-4095-B3D7-127F5C488D6E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "di-updated", "di-updated", "{AFAAE5BF-C46A-45F9-8E8B-6637C6581F9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagsCloudContainer", "di-updated\TagsCloudContainer\TagsCloudContainer.csproj", "{5E8C6AC8-9BAE-411F-800E-20F8844EE435}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagsCloudContainerTests", "di-updated\TagsCloudContainerTests\TagsCloudContainerTests.csproj", "{FE196268-9E0D-48DF-9D36-CF665ECB1223}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,9 +39,19 @@ Global
 		{4B77EC28-5FB5-4095-B3D7-127F5C488D6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B77EC28-5FB5-4095-B3D7-127F5C488D6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B77EC28-5FB5-4095-B3D7-127F5C488D6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E8C6AC8-9BAE-411F-800E-20F8844EE435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E8C6AC8-9BAE-411F-800E-20F8844EE435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E8C6AC8-9BAE-411F-800E-20F8844EE435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E8C6AC8-9BAE-411F-800E-20F8844EE435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE196268-9E0D-48DF-9D36-CF665ECB1223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE196268-9E0D-48DF-9D36-CF665ECB1223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE196268-9E0D-48DF-9D36-CF665ECB1223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE196268-9E0D-48DF-9D36-CF665ECB1223}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C33F3A5E-A1ED-4657-9B35-968A4CB23AA1} = {754C1CC8-A8B6-46C6-B35C-8A43B80111A0}
 		{4B77EC28-5FB5-4095-B3D7-127F5C488D6E} = {754C1CC8-A8B6-46C6-B35C-8A43B80111A0}
+		{5E8C6AC8-9BAE-411F-800E-20F8844EE435} = {AFAAE5BF-C46A-45F9-8E8B-6637C6581F9D}
+		{FE196268-9E0D-48DF-9D36-CF665ECB1223} = {AFAAE5BF-C46A-45F9-8E8B-6637C6581F9D}
 	EndGlobalSection
 EndGlobal
