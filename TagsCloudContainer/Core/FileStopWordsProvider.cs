@@ -1,22 +1,25 @@
 using TagsCloudContainer.Core.Interfaces;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core;
 
 public class FileStopWordsProvider(IWordNormalizer normalizer, string? stopWordsPath) : IStopWordsProvider
 {
-    private Lazy<ISet<string>> LazyStopWords => new(LoadStopWords);
+    private Lazy<Result<ISet<string>>> LazyStopWords => new(LoadStopWords);
     
-    public ISet<string> GetStopWords() => LazyStopWords.Value;
+    public Result<ISet<string>> GetStopWords() => LazyStopWords.Value;
 
-    private ISet<string> LoadStopWords()
+    private Result<ISet<string>> LoadStopWords()
     {
         if (string.IsNullOrEmpty(stopWordsPath) || !File.Exists(stopWordsPath))
-            throw new NullReferenceException($"Ошибка чтения: {stopWordsPath}");
+            Result<ISet<string>>.Failure($"Reading error: {stopWordsPath}");
 
-        return File
+        return Result<ISet<string>>.Success(
+            File
             .ReadAllLines(stopWordsPath)
             .Select(normalizer.Normalize)
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToHashSet();
+            .ToHashSet()
+            );
     }
 }

@@ -1,6 +1,8 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface IWordsFilter
 {
-    bool ShouldKeep(string word);
+    Result<bool> ShouldKeep(string word);
 }

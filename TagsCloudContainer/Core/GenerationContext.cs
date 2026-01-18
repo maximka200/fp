@@ -1,71 +1,93 @@
-using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.Interfaces;
-using TagsCloudContainer.Core.OutputFormats;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core;
 
 public class GenerationContext
 {
     private readonly TagCloudGenerationRequest request;
-
     private IEnumerable<string> words = Array.Empty<string>();
     private IReadOnlyCollection<Tag> tags = Array.Empty<Tag>();
     private IReadOnlyCollection<PositionedTag> positionedTags = Array.Empty<PositionedTag>();
     private Image<Rgba32>? image;
-
+    
     private GenerationContext(TagCloudGenerationRequest request) =>
         this.request = request ?? throw new ArgumentNullException(nameof(request));
 
-    public static GenerationContext Start(TagCloudGenerationRequest request) => new(request);
+    public static Result<GenerationContext> Start(TagCloudGenerationRequest request) 
+        => Result<GenerationContext>.Success(new(request));
 
-    public GenerationContext ReadWords(IWordsReader reader)
+    public Result<GenerationContext> ReadWords(IWordsReader reader)
     {
-        words = reader.Read(request);
-        return this;
+        var readerResult = reader.Read(request);
+        if (!readerResult.IsSuccess)
+            return Result<GenerationContext>.Failure(readerResult.Error!);
+
+        words = readerResult.Value!;
+        return Result<GenerationContext>.Success(this);
     }
 
-    public GenerationContext Preprocess(IWordsPreprocessor preprocessor)
+    public Result<GenerationContext> Preprocess(IWordsPreprocessor preprocessor)
     {
-        words = preprocessor.Process(words);
-        return this;
+        var wordsResult = preprocessor.Process(words);
+        if (!wordsResult.IsSuccess)
+            return Result<GenerationContext>.Failure(wordsResult.Error!);
+
+        words = wordsResult.Value!;
+        return Result<GenerationContext>.Success(this);
     }
 
-    public GenerationContext BuildTags(ITagsBuilder builder)
+    public Result<GenerationContext> BuildTags(ITagsBuilder builder)
     {
-        tags = builder.Build(words);
-        return this;
+        var tagsResult = builder.Build(words);
+        if (!tagsResult.IsSuccess)
+            return Result<GenerationContext>.Failure(tagsResult.Error!);
+
+        tags = tagsResult.Value!;
+        return Result<GenerationContext>.Success(this);
     }
 
-    public GenerationContext Layout(ILayoutService layout)
+    public Result<GenerationContext> Layout(ILayoutService layout)
     {
-        positionedTags = tags.Count == 0 ? Array.Empty<PositionedTag>() : layout.Layout(request, tags);
-        return this;
+        if (tags.Count == 0)
+            positionedTags = Array.Empty<PositionedTag>();
+        else
+        {
+            var layoutResult = layout.Layout(request, tags);
+            if (!layoutResult.IsSuccess)
+                return Result<GenerationContext>.Failure(layoutResult.Error!);
+
+            positionedTags = layoutResult.Value!;
+        }
+
+        return Result<GenerationContext>.Success(this);
     }
 
-    public GenerationContext Render(ICloudRenderer renderer)
+    public Result<GenerationContext> Render(ICloudRenderer renderer)
     {
-        image = renderer.Render(request, positionedTags);
-        return this;
+        var imageResult = renderer.Render(request, positionedTags);
+        if (!imageResult.IsSuccess)
+            return Result<GenerationContext>.Failure(imageResult.Error!);
+
+        image = imageResult.Value!;
+        return Result<GenerationContext>.Success(this);
     }
 
-    public void Save(IImageSaver saver)
+    public Result<GenerationContext> Save(IImageSaver saver)
     {
         if (image is null)
-            throw new InvalidOperationException("Ошибка генерации, изображение не сгенерировано");
+            return Result<GenerationContext>.Failure("Image not generated");
 
-        try
-        {
-            saver.Save(request, image);
-        }
-        finally
-        {
-            image.Dispose();
-            image = null;
-        }
+        var savingResult = saver.Save(request, image);
+        if (!savingResult.IsSuccess)
+            return Result<GenerationContext>.Failure(savingResult.Error!);
+
+        image.Dispose();
+        image = null;
+
+        return Result<GenerationContext>.Success(this);
     }
 }

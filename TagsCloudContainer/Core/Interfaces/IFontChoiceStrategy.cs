@@ -1,9 +1,10 @@
 using SixLabors.Fonts;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface IFontChoiceStrategy
 {
     string Key { get; }
-    FontFamily Resolve();
+    Result<FontFamily> Resolve();
 }

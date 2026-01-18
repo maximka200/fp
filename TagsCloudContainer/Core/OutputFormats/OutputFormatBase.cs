@@ -1,5 +1,6 @@
 using SixLabors.ImageSharp;
 using TagsCloudContainer.Core.Interfaces;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.OutputFormats;
 
@@ -10,12 +11,14 @@ public abstract class OutputSourceBase : IOutputFormat
     public bool CanHandle(string format) =>
         string.Equals(Normalize(format), Format, StringComparison.OrdinalIgnoreCase);
 
-    public void SaveImage(string path, Image image)
+    public Result<Unit> SaveImage(string path, Image image)
     {
         if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("Output path is empty", nameof(path));
+            return Result<Unit>.Failure($"Output path is empty: {nameof(path)}");
 
         SaveImageInternal(image, path);
+        
+        return Result<Unit>.Success(Unit.Value);
     }
 
     protected abstract void SaveImageInternal(Image image, string path);

@@ -1,8 +1,10 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface IWordsSource
 {
     string Format { get; }
     bool CanHandle(SourceSettings settings);
-    IEnumerable<string> GetWords(string path);
+    Result<IEnumerable<string>> GetWords(string path);
 }

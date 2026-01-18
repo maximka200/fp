@@ -2,6 +2,7 @@ using SixLabors.Fonts;
 using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.FrequencySizingStrategies;
 using TagsCloudContainer.Core.Interfaces;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core;
 
@@ -17,26 +18,37 @@ public class CloudPositionedTags(
             new InvertedFrequencySizingStrategy()
         }.ToDictionary(s => s.Inverted);
 
-    public IEnumerable<PositionedTag> GetPositionedTags(IEnumerable<Tag> tags, float minFontSize,
+    public Result<IEnumerable<PositionedTag>> GetPositionedTags(IEnumerable<Tag> tags, float minFontSize,
         float maxFontSize, bool invertSizeByFrequency, FontFamily ff)
     {
-        ArgumentNullException.ThrowIfNull(tags);
-
         var tagList = tags.ToList();
+        
+        if (!tagList.Any())
+            return Result<IEnumerable<PositionedTag>>.Failure("Tag list is empty.");
 
-        var (minFreq, maxFreq) = FrequencyRange.TryGet(tagList).GetOrYieldBreak();
-
-        var (minFont, maxFont) = FontRange.Normalize(minFontSize, maxFontSize);
-
+        var freqRangeResult = FrequencyRange.TryGet(tagList).GetOrYieldBreak();
+        if (!freqRangeResult.IsSuccess)
+            return Result<IEnumerable<PositionedTag>>.Failure(freqRangeResult.Error ?? Result<IEnumerable<PositionedTag>>.UnknownError);
+        
+        var (minFreq, maxFreq) = freqRangeResult.Value;
+        var fontResult = FontRange.Normalize(minFontSize, maxFontSize);
+        if (!fontResult.IsSuccess)
+            return Result<IEnumerable<PositionedTag>>.Failure(fontResult.Error ?? Result<IEnumerable<PositionedTag>>.UnknownError);
+        
+        var (minFont, maxFont) = fontResult.Value;
+        
         var strategy = Strategies[invertSizeByFrequency];
-
+        
+        var result = new List<PositionedTag>();
         foreach (var tag in strategy.Order(tagList))
         {
             var fontSize = GetFontSize(tag.Frequency, minFont, maxFont, minFreq, maxFreq, strategy);
             var size = tagSizeCalculator.GetSize(tag, fontSize, ff);
             var rect = cloudLayouter.PutNextRectangle(size);
-            yield return new PositionedTag(tag, rect, fontSize);
+            result.Add(new PositionedTag(tag, rect, fontSize));
         }
+        
+        return Result<IEnumerable<PositionedTag>>.Success(result);
     }
 
     private static float GetFontSize(int frequency, float minFontSize,

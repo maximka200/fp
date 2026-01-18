@@ -1,31 +1,32 @@
 using SixLabors.Fonts;
 using TagsCloudContainer.Core.Interfaces;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.FontStrategies;
 
 public abstract class FixedSystemFontStrategy : IFontChoiceStrategy
 {
-    private readonly Lazy<FontFamily> lazy;
+    private readonly Lazy<Result<FontFamily>> lazy;
 
     protected FixedSystemFontStrategy()
-        => lazy = new Lazy<FontFamily>(() => Find(SystemFontName), isThreadSafe: true);
+        => lazy = new Lazy<Result<FontFamily>>(() => Find(SystemFontName), isThreadSafe: true);
 
     public abstract string Key { get; }
     protected abstract string SystemFontName { get; }
+    
+    public Result<FontFamily> Resolve() => lazy.Value;
 
-    public FontFamily Resolve() => lazy.Value;
-
-    private static FontFamily Find(string name)
+    public FontFamily ResolveOrDefault(FontFamily fallback)
     {
-        try
-        {
-            return SystemFonts.Collection.Families
-                .First(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
-        catch (InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Системный шрифт '{name}' не найден. Поставь его в систему или замени стратегию на доступный шрифт.");
-        }
+        var result = Resolve();
+        return result.IsSuccess ? result.Value : fallback;
+    }
+    
+    private static Result<FontFamily> Find(string name)
+    {
+        var font = SystemFonts.Collection.Families
+            .FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        return Result<FontFamily>.Success(font);
     }
 }

@@ -1,14 +1,18 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core;
 
 public static class FontRange
 {
-    public static (float Min, float Max) Normalize(float minFontSize, float maxFontSize)
+    public static Result<(float Min, float Max)> Normalize(float minFontSize, float maxFontSize)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minFontSize);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxFontSize);
+        if (maxFontSize <= 0)
+            return Result<(float Min, float Max)>.Failure("Max font size must be positive.");
+        if (minFontSize <= 0)
+            return Result<(float Min, float Max)>.Failure("Min font size must be positive.");
 
         var min = Math.Min(minFontSize, maxFontSize);
         var max = Math.Max(minFontSize, maxFontSize);
-        return (min, max);
+        return Result<(float Min, float Max)>.Success((min, max));
     }
 }

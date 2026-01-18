@@ -1,6 +1,8 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core.Ranges;
 
-public sealed class ValueRange(int min, int max) : MaybeRange
+public class ValueRange(int min, int max) : MaybeRange
 {
-    public override (int Min, int Max) GetOrYieldBreak() => (min, max);
+    public override Result<(int Min, int Max)> GetOrYieldBreak() => Result<(int Min, int Max)>.Success((min, max));
 }

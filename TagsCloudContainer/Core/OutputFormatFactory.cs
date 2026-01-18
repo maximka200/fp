@@ -1,20 +1,17 @@
 using TagsCloudContainer.Core.Interfaces;
-
+using TagsCloudContainer.Result;
 namespace TagsCloudContainer.Core;
 
 public static class OutputFormatFactory
 {
-    public static IOutputFormat Create(string format, IOutputFormat[] sources)
+    public static Result<IOutputFormat> Create(string format, IOutputFormat[] sources)
     {
         var normalized = Normalize(format);
 
         var source = sources.FirstOrDefault(d =>
             string.Equals(d.Format, normalized, StringComparison.OrdinalIgnoreCase));
 
-        if (source is null)
-            throw new NotSupportedException($"Формат вывода '{format}' не поддерживается");
-
-        return source;
+        return source is null ? Result<IOutputFormat>.Failure($"Формат вывода '{format}' не поддерживается") : Result<IOutputFormat>.Success(source);
     }
 
     private static string Normalize(string format) =>

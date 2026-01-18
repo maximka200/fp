@@ -1,6 +1,8 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core.Ranges;
 
-public sealed class EmptyRange : MaybeRange
+public class EmptyRange : MaybeRange
 {
-    public override (int Min, int Max) GetOrYieldBreak() => throw new Exception("Yield break");
+    public override Result<(int Min, int Max)> GetOrYieldBreak() => Result<(int Min, int Max)>.Failure("Range is empty");
 }

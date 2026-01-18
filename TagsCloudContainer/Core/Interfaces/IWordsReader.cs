@@ -1,8 +1,9 @@
 using TagsCloudContainer.Core.Domains;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface IWordsReader
 {
-    IEnumerable<string> Read(TagCloudGenerationRequest request);
+    Result<IEnumerable<string>> Read(TagCloudGenerationRequest request);
 }

@@ -274,9 +274,9 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            var act = () => generator.Generate(request);
+            var result = generator.Generate(request);
 
-            act.Should().Throw<FileNotFoundException>();
+            result.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -315,9 +315,9 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            var act = () => generator.Generate(request);
-            
-            act.Should().Throw<NotSupportedException>();
+            var result = generator.Generate(request);
+
+            result.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -356,9 +356,9 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "no-support");
 
-            var act = () => generator.Generate(request);
-            
-            act.Should().Throw<NotSupportedException>();
+            var result = generator.Generate(request);
+
+            result.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -449,9 +449,9 @@ public class TagCloudGeneratorCoreFunctionalTests
                 "txt",
                 "definitely-not-a-font");
 
-            var act = () => generator.Generate(request);
+            var result = generator.Generate(request);
 
-            act.Should().Throw<NotSupportedException>();
+            result.IsSuccess.Should().Be(false);
         }
         finally
         {

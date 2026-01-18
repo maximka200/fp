@@ -1,11 +1,11 @@
 using TagsCloudContainer.Core.Interfaces;
-using TagsCloudContainer.Core.WordSources;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core;
 
 public static class WordsSourceFactory
 {
-    public static IWordsSource Create(SourceSettings settings, IWordsSource[] sources)
+    public static Result<IWordsSource> Create(SourceSettings settings, IWordsSource[] sources)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -15,8 +15,8 @@ public static class WordsSourceFactory
             s.CanHandle(new SourceSettings(settings.Path, format)));
 
         if (source is null)
-            throw new NotSupportedException($"Формат источника '{settings.Format}' не поддерживается");
+            return Result<IWordsSource>.Failure($"No suitable words source found for the given format: {format}");
 
-        return source;
+        return Result<IWordsSource>.Success(source);
     }
 }

@@ -1,6 +1,8 @@
+using TagsCloudContainer.Result;
+
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface IWordsPreprocessor
 {
-    IEnumerable<string> Process(IEnumerable<string> words);
+    Result<IEnumerable<string>> Process(IEnumerable<string> words);
 }

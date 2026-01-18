@@ -25,7 +25,7 @@ public class WordsSourcesFunctionalTests
 
         IWordsSource source = new DocxWordsSource();
 
-        var words = source.GetWords(path).ToArray();
+        var words = source.GetWords(path).Value.ToArray();
 
         words.Should().Contain(["Hello", "world", "hello", "cloud", "2025"]);
     }
@@ -36,9 +36,9 @@ public class WordsSourcesFunctionalTests
         var path = TestDataPath("words.doc");
         File.Exists(path).Should().BeTrue("файл words.doc должен быть в TestData");
 
-        IWordsSource source = new DocWordsSource();
+        var source = new DocWordsSource();
 
-        var words = source.GetWords(path).ToArray();
+        var words = source.GetWords(path).Value.ToArray();
 
         words.Should().Contain(["Hello", "world", "hello", "cloud", "2025"]);
     }
@@ -50,7 +50,7 @@ public class WordsSourcesFunctionalTests
         
         var settings = new SourceSettings("whatever", "  DOCX  ");
 
-        var source = WordsSourceFactory.Create(settings, sources);
+        var source = WordsSourceFactory.Create(settings, sources).Value;
 
         source.Should().BeOfType<DocxWordsSource>();
     }
@@ -64,30 +64,27 @@ public class WordsSourcesFunctionalTests
         var sources = DefaultSources();
         var settings = new SourceSettings("whatever", format);
 
-        var source = WordsSourceFactory.Create(settings, sources);
+        var source = WordsSourceFactory.Create(settings, sources).Value;
 
         source.Should().BeOfType(expectedType);
     }
 
     [Test]
-    public void WordsSourceFactory_Create_WhenFormatIsUnsupported_ShouldThrow()
+    public void WordsSourceFactory_Create_WhenFormatIsUnsupported_ShouldFailure()
     {
         var sources = DefaultSources();
-        var act = () => WordsSourceFactory.Create(new SourceSettings("whatever", "pdf"), sources);
+        var result = WordsSourceFactory
+            .Create(new SourceSettings("whatever", "pdf"), sources);
 
-        act.Should()
-            .Throw<NotSupportedException>()
-            .WithMessage("*'pdf'*");
+        result.IsSuccess.Should().Be(false);
     }
 
     [Test]
-    public void WordsSourceFactory_Create_WhenSourcesAreEmpty_ShouldThrow()
+    public void WordsSourceFactory_Create_WhenSourcesAreEmpty_ShouldFailure()
     {
-        var act = () => WordsSourceFactory.Create(new SourceSettings("whatever", "txt"), Array.Empty<IWordsSource>());
+        var result = WordsSourceFactory.Create(new SourceSettings("whatever", "txt"), Array.Empty<IWordsSource>());
 
-        act.Should()
-            .Throw<NotSupportedException>()
-            .WithMessage("*'txt'*");
+        result.IsSuccess.Should().Be(false);
     }
 
     private static IWordsSource[] DefaultSources() =>

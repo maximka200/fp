@@ -1,8 +1,9 @@
 using TagsCloudContainer.Core.Domains;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.Interfaces;
 
 public interface ITagCloudGenerator
 {
-    void Generate(TagCloudGenerationRequest request);
+    Result<GenerationContext> Generate(TagCloudGenerationRequest request);
 }

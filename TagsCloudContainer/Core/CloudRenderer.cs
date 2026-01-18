@@ -5,21 +5,26 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.Interfaces;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core;
 
 public class CloudRenderer : ICloudRenderer
 {
-    public Image<Rgba32> Render(TagCloudGenerationRequest request, IReadOnlyCollection<PositionedTag> positionedTags)
+    public Result<Image<Rgba32>> Render(TagCloudGenerationRequest request, IReadOnlyCollection<PositionedTag> positionedTags)
     {
         var s = request.LayoutSettings;
         var img = new Image<Rgba32>(s.ImageSize.Width, s.ImageSize.Height, request.BackgroundColor);
 
         if (positionedTags.Count == 0)
-            return img;
+            return Result<Image<Rgba32>>.Failure("Cannot render tag cloud: no tags to render.");
 
-        var ctx = BuildRenderContext(request, positionedTags);
+        var ctxResult = BuildRenderContext(request, positionedTags);
+        if (!ctxResult.IsSuccess)
+            return Result<Image<Rgba32>>.Failure(ctxResult.Error);
 
+        var ctx = ctxResult.Value;
+        
         img.Mutate(i =>
         {
             foreach (var (tag, rect, fontSize) in positionedTags)
@@ -36,10 +41,10 @@ public class CloudRenderer : ICloudRenderer
             }
         });
 
-        return img;
+        return Result<Image<Rgba32>>.Success(img);
     }
 
-    private static RenderContext BuildRenderContext(
+    private static Result<RenderContext> BuildRenderContext(
         TagCloudGenerationRequest request,
         IReadOnlyCollection<PositionedTag> positionedTags)
     {
@@ -48,16 +53,20 @@ public class CloudRenderer : ICloudRenderer
         var minFreq = positionedTags.Min(p => p.Tag.Frequency);
         var maxFreq = positionedTags.Max(p => p.Tag.Frequency);
 
-        var fontFamily = FontFamilyResolver.Resolve(request.Font);
-
-        return new RenderContext(
+        var fontFamilyResult = FontFamilyResolver.Resolve(request.Font);
+        if (!fontFamilyResult.IsSuccess)
+            return Result<RenderContext>.Failure(fontFamilyResult.Error);
+        
+        var fontFamily = fontFamilyResult.Value;
+        return Result<RenderContext>.Success(
+            new RenderContext(
             FontFamily: fontFamily,
             MinFontSize: s.MinFontSize,
             MaxFontSize: s.MaxFontSize,
             MinFreq: minFreq,
             MaxFreq: maxFreq,
             TextColor: request.TextColor
-        );
+        ));
     }
 
     private static PointF GetCenteredOrigin(string text, Font font, Rectangle rect)
