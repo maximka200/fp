@@ -1,5 +1,4 @@
-using TagsCloudContainer.Сlients.ClientParserStrategies;
-using TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Domains;
 using TagsCloudContainer.Сlients.Interfaces;
 
@@ -16,22 +15,34 @@ public class ClientSelectionParser : IClientSelectionParser
         new RestArgStrategy()
     ];
 
-    public ClientSelection Parse(string[] args)
+    public Result<ClientSelection> Parse(string[]? args)
     {
-        ArgumentNullException.ThrowIfNull(args);
+        if (args is null)
+            return Result<ClientSelection>.Failure("args is null");
 
         var ctx = new ParseContext(args.Length);
-
         var i = 0;
+
         while (i < args.Length)
         {
-            var step = Strategies.Aggregate(
-                ArgStep.Unhandled,
-                (acc, s) => acc.OrElse(() => s.Handle(args, i, ctx)));
+            var result = Strategies.Aggregate(
+                Result<ArgStep>.Success(ArgStep.Unhandled),
+                (acc, strategy) =>
+                {
+                    if (!acc.IsSuccess)
+                        return acc;
 
-            i = step.NextIndex(i);
+                    return acc.Value != ArgStep.Unhandled ? acc : strategy.Handle(args, i, ctx);
+                });
+
+            if (!result.IsSuccess)
+                return Result<ClientSelection>.Failure(result.Error!);
+
+            i = result.Value!.NextIndex(i);
         }
-
-        return ctx.Build();
+        
+        var buildR = ctx.Build();
+        return !buildR.IsSuccess ? Result<ClientSelection>.Failure(buildR.Error!) 
+            : Result<ClientSelection>.Success(buildR.Value);
     }
 }

@@ -1,20 +1,13 @@
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
-using TagsCloudContainer.Сlients.Console.Parsing.PreCheckResults;
 
 namespace TagsCloudContainer.Сlients.Console.Parsing;
 
-internal class HelpFlagPreCheck(string token) : IPreCheck
+internal class HelpFlagPreCheck(string flag) : IPreCheck
 {
-    public PreCheckResult Check(string[] args)
+    public Result<Unit> Check(string[] args)
     {
-        try
-        {
-            _ = args.First(a => a.Equals(token, StringComparison.OrdinalIgnoreCase));
-            return PreCheckResult.Stop("help");
-        }
-        catch (InvalidOperationException)
-        {
-            return PreCheckResult.Continue;
-        }
+        return args.Contains(flag) ? Result<Unit>.Failure(ConsoleOptionsParser.HelpErrorCode) 
+            : Result<Unit>.Success(Unit.Value);
     }
 }

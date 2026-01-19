@@ -10,44 +10,47 @@ public class ConsoleClient(ITagCloudGeneratorFactory generatorFactory) : IClient
 {
     public int Run(string[] args)
     {
-        if (!ConsoleOptionsParser.TryParse(args, out var o, out var error))
+        var parseResult = ConsoleOptionsParser.Parse(args);
+
+        if (!parseResult.IsSuccess)
         {
-            if (error != ConsoleOptionsParser.HelpErrorCode)
-                System.Console.WriteLine(error);
+            if (parseResult.Error != ConsoleOptionsParser.HelpErrorCode)
+                System.Console.WriteLine(parseResult.Error);
 
             PrintUsage();
             return 1;
         }
 
-        if (!File.Exists(o?.StopWordsPath))
+        var o = parseResult.Value!;
+
+        var stopWordsExists = File.Exists(o.StopWordsPath);
+        if (!stopWordsExists)
         {
-            System.Console.WriteLine($"Файл стоп-слов не найден: {o?.StopWordsPath}");
+            System.Console.WriteLine($"Файл стоп-слов не найден: {o.StopWordsPath}");
             return 1;
         }
 
-        try
-        {
-            var settings = new TagCloudRuntimeSettings(
-                CenterX: o.CenterX,
-                CenterY: o.CenterY,
-                StopWordsPath: o.StopWordsPath
-            );
+        var settings = new TagCloudRuntimeSettings(
+            CenterX: o.CenterX,
+            CenterY: o.CenterY,
+            StopWordsPath: o.StopWordsPath
+        );
 
-            var generator = generatorFactory.Create(settings);
-            generator.Generate(BuildRequest(o));
+        var generator = generatorFactory.Create(settings);
+        var generatingResult = generator.Generate(BuildRequest(o));
 
-            System.Console.WriteLine($"Облако тегов успешно сохранено в файл: {o.OutputPath}");
-            return 0;
-        }
-        catch (Exception ex)
+        if (!generatingResult.IsSuccess)
         {
-            System.Console.WriteLine("Во время генерации облака произошла ошибка:");
-            System.Console.WriteLine(ex);
+            System.Console.WriteLine("Не удалось сгенерировать облако тегов:");
+            System.Console.WriteLine(generatingResult.Error);
             return 1;
         }
+
+        System.Console.WriteLine($"Облако тегов успешно сохранено в файл: {o.OutputPath}");
+        return 0;
     }
 
-    private static TagCloudGenerationRequest BuildRequest(ConsoleOptions? o) =>
+    private static TagCloudGenerationRequest BuildRequest(ConsoleOptions o) =>
         new()
         {
             SourceSettings = new SourceSettings(o.InputPath, o.SourceType),

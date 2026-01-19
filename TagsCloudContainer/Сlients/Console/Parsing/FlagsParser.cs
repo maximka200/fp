@@ -1,3 +1,4 @@
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Console.Parsing.FlagParserStrategies;
 using TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
 
@@ -12,23 +13,40 @@ public static class FlagsParser
         new NextTokenFlagStrategy()
     ];
 
-    public static IReadOnlyDictionary<string, string?> Parse(string[] args)
+    public static Result<IReadOnlyDictionary<string, string?>> Parse(string[] args)
     {
         var flags = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         var i = 0;
 
         while (i < args.Length)
         {
-            var a = args[i];
-            Ensure.StartsWithFlagPrefix(a);
+            var arg = args[i];
+            
+            if (!arg.StartsWith("--", StringComparison.Ordinal))
+                return Result<IReadOnlyDictionary<string, string?>>.Failure(
+                    $"Ожидался флаг, но получено: '{arg}'");
 
-            var step = Strategies.Aggregate(
-                ArgStep.Unhandled,
-                (acc, s) => acc.OrElse(() => s.Handle(args, i, flags)));
+            Result<ArgStep>? handled = null;
 
-            i = step.NextIndex(i);
+            foreach (var strategy in Strategies)
+            {
+                var r = strategy.Handle(args, i, flags);
+
+                if (!r.IsSuccess)
+                    return Result<IReadOnlyDictionary<string, string?>>.Failure(r.Error!);
+
+                if (!r.Value.IsHandled) continue;
+                handled = r;
+                break;
+            }
+
+            if (handled is null)
+                return Result<IReadOnlyDictionary<string, string?>>.Failure(
+                    $"Неизвестный флаг: {arg}");
+
+            i = handled.Value!.NextIndex(i);
         }
 
-        return flags;
+        return Result<IReadOnlyDictionary<string, string?>>.Success(flags);
     }
 }

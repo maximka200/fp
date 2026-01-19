@@ -1,33 +1,33 @@
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Domains;
 
-namespace TagsCloudContainer.Сlients.ClientParserStrategies;
+namespace TagsCloudContainer.Сlients;
 
-public sealed class ClientEqualsStrategy : IArgStrategy
+public class ClientEqualsStrategy : IArgStrategy
 {
     private static readonly IReadOnlyDictionary<string, Action<string, ParseContext>> Map =
         new Dictionary<string, Action<string, ParseContext>>(StringComparer.OrdinalIgnoreCase)
         {
-            [ClientSelectionParser.ClientFlag] = static (value, ctx) => ctx.SetClientKey(value)
+            [ClientSelectionParser.ClientFlag] =
+                static (value, ctx) => ctx.SetClientKey(value)
         };
 
-    public ArgStep Handle(string[] args, int index, ParseContext ctx)
+    public Result<ArgStep> Handle(string[] args, int index, ParseContext ctx)
     {
         var token = args[index];
+        
+        var parts = token.Split('=', 2);
+        if (parts.Length != 2)
+            return Result<ArgStep>.Success(ArgStep.Unhandled);
 
-        try
-        {
-            var parts = token.Split('=', 2);
-            var value = parts[1];
-            Map[parts[0]](value, ctx);
-            return ArgStep.Consumed(1);
-        }
-        catch (IndexOutOfRangeException)
-        {
-            return ArgStep.Unhandled;
-        }
-        catch (KeyNotFoundException)
-        {
-            return ArgStep.Unhandled;
-        }
+        var key = parts[0];
+        var value = parts[1];
+
+        if (!Map.TryGetValue(key, out var handler))
+            return Result<ArgStep>.Success(ArgStep.Unhandled);
+        
+        handler(value, ctx);
+
+        return Result<ArgStep>.Success(ArgStep.Consumed(1));
     }
 }

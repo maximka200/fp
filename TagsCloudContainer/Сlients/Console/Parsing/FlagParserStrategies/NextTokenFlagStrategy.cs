@@ -1,24 +1,30 @@
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
 
 namespace TagsCloudContainer.Сlients.Console.Parsing.FlagParserStrategies;
 
 public class NextTokenFlagStrategy : IArgConsoleStrategy
 {
-    public ArgStep Handle(string[] args, int index, IDictionary<string, string?> flags)
+    public Result<ArgStep> Handle(string[] args, int index, IDictionary<string, string?> flags)
     {
         var key = args[index];
 
+        if (index + 1 >= args.Length)
+            return Result<ArgStep>.Failure($"Ожидалось значение после {key}");
+
+        var value = args[index + 1];
+
         try
         {
-            var value = args[index + 1];
             Ensure.NextTokenIsValue(value, key);
-
-            FlagStore.Put(flags, key, value);
-            return ArgStep.Consumed(2);
         }
-        catch (IndexOutOfRangeException)
+        catch (Exception e)
         {
-            throw new Exception($"Ожидалось значение после {key}");
+            return Result<ArgStep>.Failure(e.Message);
         }
+
+        var r = FlagStore.Put(flags, key, value);
+        return !r.IsSuccess ? Result<ArgStep>.Failure(r.Error!) 
+            : Result<ArgStep>.Success(ArgStep.Consumed(2));
     }
 }

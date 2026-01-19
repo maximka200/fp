@@ -7,7 +7,7 @@ namespace TagsCloudContainer.Сlients.Console.Parsing.ColorParsing.Strategies;
 
 public class HexColorStrategy : IColorStrategy
 {
-    private static readonly IReadOnlyDictionary<int, Func<string, Color>> parsers =
+    private static readonly IReadOnlyDictionary<int, Func<string, Color>> Parsers =
         new Dictionary<int, Func<string, Color>>
         {
             [6] = ParseRgb,
@@ -19,7 +19,7 @@ public class HexColorStrategy : IColorStrategy
         try
         {
             var v = raw.Trim().TrimStart('#');
-            return ColorResult.Resolved(parsers[v.Length](v));
+            return ColorResult.Resolved(Parsers[v.Length](v));
         }
         catch
         {

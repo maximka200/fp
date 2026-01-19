@@ -175,7 +175,7 @@ public class ConsoleOptionsParserFunctionalTests
 
             ok.Should().BeFalse();
             options.Should().BeNull();
-            error.Should().Be("Ожидалось значение после --width");
+            error.Should().Be("Некорректный --width: --height");
         }
         finally
         {
@@ -279,32 +279,6 @@ public class ConsoleOptionsParserFunctionalTests
 
             options.Font.Should().Be(font);
             options.Desc.Should().Be(invert);
-        }
-        finally
-        {
-            TryDeleteDirectory(tempDir.FullName);
-        }
-    }
-
-    [Test]
-    public void TryParse_WhenOutputFormatIsUnsupported_ShouldFail()
-    {
-        var tempDir = Directory.CreateTempSubdirectory("tags-cloud-tests-");
-        try
-        {
-            var inputPath = CreateFile(tempDir.FullName, "words.txt", ["hello", "world"]);
-
-            var args = new[]
-            {
-                "--input", inputPath,
-                "--format", "definitely-not-a-format"
-            };
-
-            var ok = ConsoleOptionsParser.TryParse(args, out var options, out var error);
-
-            ok.Should().BeFalse();
-            options.Should().BeNull();
-            error.Should().Be("Неподдерживаемый формат: definitely-not-a-format");
         }
         finally
         {

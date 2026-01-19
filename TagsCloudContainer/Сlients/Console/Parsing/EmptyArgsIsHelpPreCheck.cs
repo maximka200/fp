@@ -1,20 +1,13 @@
+using TagsCloudContainer.Result;
 using TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
-using TagsCloudContainer.Сlients.Console.Parsing.PreCheckResults;
 
 namespace TagsCloudContainer.Сlients.Console.Parsing;
 
-public class EmptyArgsIsHelpPreCheck : IPreCheck
+internal class EmptyArgsIsHelpPreCheck : IPreCheck
 {
-    public PreCheckResult Check(string[] args)
+    public Result<Unit> Check(string[] args)
     {
-        try
-        {
-            _ = args[0];
-            return PreCheckResult.Continue;
-        }
-        catch (IndexOutOfRangeException)
-        {
-            return PreCheckResult.Stop("help");
-        }
+        return args.Length == 0 ? Result<Unit>.Failure(ConsoleOptionsParser.HelpErrorCode) 
+            : Result<Unit>.Success(Unit.Value);
     }
 }

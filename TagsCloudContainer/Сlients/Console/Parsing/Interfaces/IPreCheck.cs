@@ -1,8 +1,8 @@
-using TagsCloudContainer.Сlients.Console.Parsing.PreCheckResults;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Сlients.Console.Parsing.Interfaces;
 
 internal interface IPreCheck
 {
-    PreCheckResult Check(string[] args);
+    Result<Unit> Check(string[] args);
 }

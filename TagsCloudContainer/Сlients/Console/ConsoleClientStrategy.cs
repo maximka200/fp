@@ -8,15 +8,6 @@ public class ConsoleClientStrategy(IClient client) : IClientStrategy
 
     public int Run(string[] args)
     {
-        try
-        {
-            return client.Run(args);
-        }
-        catch (Exception ex)
-        {
-            System.Console.WriteLine("Ошибка при запуске консольного клиента:");
-            System.Console.WriteLine(ex);
-            return 1;
-        }
+        return client.Run(args);
     }
 }

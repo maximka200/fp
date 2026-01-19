@@ -1,4 +1,4 @@
-using TagsCloudContainer.Сlients.Exceptions;
+using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Сlients.Domains;
 
@@ -6,22 +6,26 @@ public abstract class ClientKeyState
 {
     public static readonly ClientKeyState Unset = new UnsetState();
 
-    public abstract ClientKeyState Set(string key);
-    public abstract string GetOrThrow();
+    public abstract Result<ClientKeyState> Set(string key);
+    public abstract Result<string> Get();
 
     private sealed class UnsetState : ClientKeyState
     {
-        public override ClientKeyState Set(string key) => new SetState(key);
+        public override Result<ClientKeyState> Set(string key) =>
+            Result<ClientKeyState>.Success(new SetState(key));
 
-        public override string GetOrThrow() =>
-            throw new CommandLineException($"Не задан клиент. Используй {ClientSelectionParser.ClientFlag} <id> или {ClientSelectionParser.ClientFlag}=<id>.");
+        public override Result<string> Get() =>
+            Result<string>.Failure(
+                $"Не задан клиент. Используй {ClientSelectionParser.ClientFlag} <id> или {ClientSelectionParser.ClientFlag}=<id>."
+            );
     }
 
     private sealed class SetState(string key) : ClientKeyState
     {
-        public override ClientKeyState Set(string k) =>
-            throw new CommandLineException("Флаг указан дважды");
+        public override Result<ClientKeyState> Set(string _) =>
+            Result<ClientKeyState>.Failure("Флаг указан дважды");
 
-        public override string GetOrThrow() => key;
+        public override Result<string> Get() =>
+            Result<string>.Success(key);
     }
 }
