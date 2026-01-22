@@ -11,7 +11,7 @@ public static class OutputFormatFactory
         var source = sources.FirstOrDefault(d =>
             string.Equals(d.Format, normalized, StringComparison.OrdinalIgnoreCase));
 
-        return source is null ? Result<IOutputFormat>.Failure($"Формат вывода '{format}' не поддерживается") : Result<IOutputFormat>.Success(source);
+        return source is null ? Result<IOutputFormat>.Failure($"Output format '{format}' is not support") : Result<IOutputFormat>.Success(source);
     }
 
     private static string Normalize(string format) =>

@@ -71,12 +71,10 @@ public class GenerationContext
         if (image is null)
             return Result<GenerationContext>.Failure("Image not generated");
 
-        return saver.Save(request, image)
-            .Bind(_ =>
-            {
-                image.Dispose();
-                image = null;
-                return Result<GenerationContext>.Success(this);
-            });
+        using var img = image;
+        image = null;
+        
+        return saver.Save(request, img)
+            .Map(_ => this); 
     }
 }

@@ -50,8 +50,8 @@ public class TagCloudGeneratorCoreFunctionalTests
             "txt"
         );
         
-        generator.Generate(request);
-        
+        var generateR = generator.Generate(request);
+        generateR.IsSuccess.Should().Be(true);
         File.Exists(outputPath).Should().BeTrue();
 
         var bytes = File.ReadAllBytes(outputPath);
@@ -93,8 +93,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            generator.Generate(request);
-
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(true);
             using var image = Image.Load<Rgba32>(outputPath);
             image.Width.Should().Be(width);
             image.Height.Should().Be(height);
@@ -138,7 +138,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            generator.Generate(request);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(true);
 
             using var image = Image.Load<Rgba32>(outputPath);
             
@@ -183,7 +184,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            generator.Generate(request);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(true);
 
             using var image = Image.Load<Rgba32>(outputPath);
 
@@ -228,7 +230,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            generator.Generate(request);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(true);
 
             File.Exists(outputPath).Should().BeTrue();
 
@@ -274,9 +277,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            var result = generator.Generate(request);
-
-            result.IsSuccess.Should().Be(false);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -315,9 +317,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "txt");
 
-            var result = generator.Generate(request);
-
-            result.IsSuccess.Should().Be(false);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -356,9 +357,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 64f,
                 "no-support");
 
-            var result = generator.Generate(request);
-
-            result.IsSuccess.Should().Be(false);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(false);
         }
         finally
         {
@@ -400,7 +400,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 "txt",
                 fontChoice);
 
-            generator.Generate(request);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(true);
 
             File.Exists(outputPath).Should().BeTrue();
 
@@ -449,9 +450,8 @@ public class TagCloudGeneratorCoreFunctionalTests
                 "txt",
                 "definitely-not-a-font");
 
-            var result = generator.Generate(request);
-
-            result.IsSuccess.Should().Be(false);
+            var generateR = generator.Generate(request);
+            generateR.IsSuccess.Should().Be(false);
         }
         finally
         {

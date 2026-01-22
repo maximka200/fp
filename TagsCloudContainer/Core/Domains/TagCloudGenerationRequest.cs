@@ -9,9 +9,9 @@ public class TagCloudGenerationRequest
     public required string OutputPath { get; init; }
     public Color TextColor { get; init; }
     public Color BackgroundColor { get; init; }
-    public string OutputFormat { get; init; }
+    public required string OutputFormat { get; init; }
     
-    public string? Font { get; init; }
+    public required string Font { get; init; }
     
     public bool Desc { get; init; }
 }

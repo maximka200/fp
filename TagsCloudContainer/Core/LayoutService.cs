@@ -17,7 +17,7 @@ public class LayoutService(ICloudPositionedTags layouter) : ILayoutService
                         request.LayoutSettings.MaxFontSize, 
                         request.Desc, 
                         ff)
-                    .Map(posTags => posTags.ToList() as IReadOnlyCollection<PositionedTag>)
+                    .Map(IReadOnlyCollection<PositionedTag> (posTags) => posTags.ToList())
             );
     }
 }

@@ -29,10 +29,7 @@ public class FileStopWordsProvider(IWordNormalizer normalizer, string? stopWords
         if (string.IsNullOrWhiteSpace(path))
             return Result<string>.Failure("Stop words path is empty.");
 
-        if (!File.Exists(path))
-            return Result<string>.Failure($"Stop words file not found: {path}");
-
-        return Result<string>.Success(path);
+        return !File.Exists(path) ? Result<string>.Failure($"Stop words file not found: {path}") : Result<string>.Success(path);
     }
 
     private static Result<string[]> ReadAllLines(string path)

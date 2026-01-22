@@ -26,7 +26,11 @@ public class WordsSourcesFunctionalTests
 
         IWordsSource source = new DocxWordsSource();
 
-        var words = source.GetWords(path).Value.ToArray();
+        var result = source.GetWords(path);
+        
+        result.IsSuccess.Should().BeTrue();
+        
+        var words = result.Value.ToArray();
 
         words.Should().Contain(["Hello", "world", "hello", "cloud", "2025"]);
     }
@@ -35,14 +39,18 @@ public class WordsSourcesFunctionalTests
     public void DocWordsSource_GetWords_ShouldTokenizeTextFromDocFixture()
     {
         var path = TestDataPath("words.doc");
-        File.Exists(path).Should().BeTrue("файл words.doc должен быть в TestData");
+        File.Exists(path).Should().BeTrue();
 
         var source = new DocWordsSource();
-
-        var words = source.GetWords(path).Value.ToArray();
-
-        words.Should().Contain(["Hello", "world", "hello", "cloud", "2025"]);
+        
+        var result = source.GetWords(path);
+        
+        result.IsSuccess.Should().BeTrue();
+        
+        var words = result.Value.ToArray();
+        words.Should().Contain(new[] { "Hello", "world", "hello", "cloud", "2025" });
     }
+
 
     [Test]
     public void WordsSourceFactory_Create_ShouldPickSourceThatCanHandle_FormatIsTrimmed_AndCaseIsIgnored()
@@ -51,8 +59,11 @@ public class WordsSourcesFunctionalTests
         
         var settings = new SourceSettings("whatever", "  DOCX  ");
 
-        var source = WordsSourceFactory.Create(settings, sources).Value;
+        var result = WordsSourceFactory.Create(settings, sources);
+        result.IsSuccess.Should().BeTrue();
 
+        var source = result.Value;
+        
         source.Should().BeOfType<DocxWordsSource>();
     }
 
@@ -65,8 +76,12 @@ public class WordsSourcesFunctionalTests
         var sources = DefaultSources();
         var settings = new SourceSettings("whatever", format);
 
-        var source = WordsSourceFactory.Create(settings, sources).Value;
-
+        var result = WordsSourceFactory.Create(settings, sources);
+        
+        result.IsSuccess.Should().BeTrue();
+        
+        var source = result.Value;
+        
         source.Should().BeOfType(expectedType);
     }
 
@@ -74,18 +89,23 @@ public class WordsSourcesFunctionalTests
     public void WordsSourceFactory_Create_WhenFormatIsUnsupported_ShouldFailure()
     {
         var sources = DefaultSources();
-        var result = WordsSourceFactory
-            .Create(new SourceSettings("whatever", "pdf"), sources);
-
+        const string format = "pdf";
+        
+        var result = WordsSourceFactory.Create(new SourceSettings("whatever", format), sources);
+        
         result.IsSuccess.Should().Be(false);
+        result.Error.Should().Be($"No suitable words source found for the given format: {format}");
     }
 
     [Test]
     public void WordsSourceFactory_Create_WhenSourcesAreEmpty_ShouldFailure()
     {
-        var result = WordsSourceFactory.Create(new SourceSettings("whatever", "txt"), Array.Empty<IWordsSource>());
-
+        const string format = "txt";
+        
+        var result = WordsSourceFactory.Create(new SourceSettings("whatever", format), Array.Empty<IWordsSource>());
+        
         result.IsSuccess.Should().Be(false);
+        result.Error.Should().Be($"No suitable words source found for the given format: {format}");
     }
 
     private static IWordsSource[] DefaultSources() =>

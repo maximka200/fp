@@ -15,18 +15,18 @@ public abstract class FixedSystemFontStrategy : IFontChoiceStrategy
     protected abstract string SystemFontName { get; }
     
     public Result<FontFamily> Resolve() => lazy.Value;
-
-    public FontFamily ResolveOrDefault(FontFamily fallback)
-    {
-        var result = Resolve();
-        return result.IsSuccess ? result.Value : fallback;
-    }
     
     private static Result<FontFamily> Find(string name)
     {
-        var font = SystemFonts.Collection.Families
-            .FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
-
-        return Result<FontFamily>.Success(font);
+        try
+        {
+            var font = SystemFonts.Collection.Families
+                .First(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+            return Result<FontFamily>.Success(font);
+        }
+        catch (Exception e)
+        {
+            return Result<FontFamily>.Failure(e.Message);
+        }
     }
 }

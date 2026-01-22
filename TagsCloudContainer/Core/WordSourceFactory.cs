@@ -8,16 +8,12 @@ public static class WordsSourceFactory
 {
     public static Result<IWordsSource> Create(SourceSettings settings, IWordsSource[] sources)
     {
-        ArgumentNullException.ThrowIfNull(settings);
-
         var format = settings.Format.Trim();
 
         var source = sources.FirstOrDefault(s =>
             s.CanHandle(new SourceSettings(settings.Path, format)));
 
-        if (source is null)
-            return Result<IWordsSource>.Failure($"No suitable words source found for the given format: {format}");
-
-        return Result<IWordsSource>.Success(source);
+        return source is null ? 
+            Result<IWordsSource>.Failure($"No suitable words source found for the given format: {format}") : Result<IWordsSource>.Success(source);
     }
 }
