@@ -1,4 +1,5 @@
 using NPOI.XWPF.UserModel;
+using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.Interfaces;
 using TagsCloudContainer.Result;
 

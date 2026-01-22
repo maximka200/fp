@@ -4,7 +4,7 @@ using TagsCloudContainer.Core.Interfaces;
 
 namespace TagsCloudContainer.Core;
 
-public sealed class CircularCloudLayouterWrapper(Point center) : ICircularCloudLayouterWrapper
+public class CircularCloudLayouterWrapper(Point center) : ICircularCloudLayouterWrapper
 {
     private readonly CircularCloudLayouter inner = new(center.ToDrawingPoint());
 

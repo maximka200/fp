@@ -6,20 +6,20 @@ public abstract class ArgStep
     public static ArgStep Consumed(int count) => new HandledStep(count);
     
     public abstract bool IsHandled { get; }
-    
-    public abstract int ConsumedCount { get; }
+
+    protected abstract int ConsumedCount { get; }
     
     public int NextIndex(int currentIndex) => currentIndex + ConsumedCount;
 
-    private sealed class UnhandledStep : ArgStep
+    private class UnhandledStep : ArgStep
     {
         public override bool IsHandled => false;
-        public override int ConsumedCount => 0;
+        protected override int ConsumedCount => 0;
     }
 
-    private sealed class HandledStep(int consumed) : ArgStep
+    private  class HandledStep(int consumed) : ArgStep
     {
         public override bool IsHandled => true;
-        public override int ConsumedCount => consumed;
+        protected override int ConsumedCount => consumed;
     }
 }

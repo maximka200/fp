@@ -1,5 +1,6 @@
 using NPOI.HWPF;
 using NPOI.HWPF.Extractor;
+using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.Interfaces;
 using TagsCloudContainer.Result;
 

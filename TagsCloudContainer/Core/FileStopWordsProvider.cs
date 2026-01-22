@@ -11,15 +11,39 @@ public class FileStopWordsProvider(IWordNormalizer normalizer, string? stopWords
 
     private Result<ISet<string>> LoadStopWords()
     {
-        if (string.IsNullOrEmpty(stopWordsPath) || !File.Exists(stopWordsPath))
-            Result<ISet<string>>.Failure($"Reading error: {stopWordsPath}");
+        return ValidatePath(stopWordsPath)
+            .Bind(ReadAllLines)
+            .Map(lines =>
+            {
+                ISet<string> set = lines
+                    .Select(normalizer.Normalize)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToHashSet();
 
-        return Result<ISet<string>>.Success(
-            File
-            .ReadAllLines(stopWordsPath)
-            .Select(normalizer.Normalize)
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToHashSet()
-            );
+                return set;
+            });
+    }
+    
+    private static Result<string> ValidatePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return Result<string>.Failure("Stop words path is empty.");
+
+        if (!File.Exists(path))
+            return Result<string>.Failure($"Stop words file not found: {path}");
+
+        return Result<string>.Success(path);
+    }
+
+    private static Result<string[]> ReadAllLines(string path)
+    {
+        try
+        {
+            return Result<string[]>.Success(File.ReadAllLines(path));
+        }
+        catch (Exception ex)
+        {
+            return Result<string[]>.Failure(ex.Message);
+        }
     }
 }

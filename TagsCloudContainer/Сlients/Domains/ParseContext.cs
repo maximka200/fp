@@ -11,17 +11,15 @@ public class ParseContext(int capacity)
 
     public Result<Unit> SetClientKey(string raw)
     {
-        var keyR = ClientKey.Parse(raw);
-        if (!keyR.IsSuccess)
-            return Result<Unit>.Failure(keyR.Error);
-        var key = keyR.Value!;
-        
-        var stateR = state.Set(key);
-        if (!stateR.IsSuccess)
-            return Result<Unit>.Failure(stateR.Error);
-        state = stateR.Value!;
-        
-        return Result<Unit>.Success(Unit.Value);
+        return ClientKey.Parse(raw)   
+            .Bind(key =>
+                state.Set(key)    
+                    .Map(newState =>
+                    {
+                        state = newState;
+                        return Unit.Value;
+                    })
+            );
     }
 
     public Result<ClientSelection> Build()

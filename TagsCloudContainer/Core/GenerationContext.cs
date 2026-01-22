@@ -20,74 +20,63 @@ public class GenerationContext
     public static Result<GenerationContext> Start(TagCloudGenerationRequest request) 
         => Result<GenerationContext>.Success(new(request));
 
-    public Result<GenerationContext> ReadWords(IWordsReader reader)
-    {
-        var readerResult = reader.Read(request);
-        if (!readerResult.IsSuccess)
-            return Result<GenerationContext>.Failure(readerResult.Error!);
+    public Result<GenerationContext> ReadWords(IWordsReader reader) =>
+        reader.Read(request)
+            .Bind(w =>
+            {
+                words = w;
+                return Result<GenerationContext>.Success(this);
+            });
 
-        words = readerResult.Value!;
-        return Result<GenerationContext>.Success(this);
-    }
+    public Result<GenerationContext> Preprocess(IWordsPreprocessor preprocessor) =>
+        preprocessor.Process(words)
+            .Bind(w =>
+            {
+                words = w;
+                return Result<GenerationContext>.Success(this);
+            });
 
-    public Result<GenerationContext> Preprocess(IWordsPreprocessor preprocessor)
-    {
-        var wordsResult = preprocessor.Process(words);
-        if (!wordsResult.IsSuccess)
-            return Result<GenerationContext>.Failure(wordsResult.Error!);
-
-        words = wordsResult.Value!;
-        return Result<GenerationContext>.Success(this);
-    }
-
-    public Result<GenerationContext> BuildTags(ITagsBuilder builder)
-    {
-        var tagsResult = builder.Build(words);
-        if (!tagsResult.IsSuccess)
-            return Result<GenerationContext>.Failure(tagsResult.Error!);
-
-        tags = tagsResult.Value!;
-        return Result<GenerationContext>.Success(this);
-    }
+    public Result<GenerationContext> BuildTags(ITagsBuilder builder) =>
+        builder.Build(words)
+            .Bind(t =>
+            {
+                tags = t;
+                return Result<GenerationContext>.Success(this);
+            });
 
     public Result<GenerationContext> Layout(ILayoutService layout)
     {
-        if (tags.Count == 0)
-            positionedTags = Array.Empty<PositionedTag>();
-        else
-        {
-            var layoutResult = layout.Layout(request, tags);
-            if (!layoutResult.IsSuccess)
-                return Result<GenerationContext>.Failure(layoutResult.Error!);
-
-            positionedTags = layoutResult.Value!;
-        }
-
+        if (tags.Count != 0)
+            return layout.Layout(request, tags)
+                .Bind(p =>
+                {
+                    positionedTags = p;
+                    return Result<GenerationContext>.Success(this);
+                });
+        positionedTags = Array.Empty<PositionedTag>();
         return Result<GenerationContext>.Success(this);
     }
 
-    public Result<GenerationContext> Render(ICloudRenderer renderer)
-    {
-        var imageResult = renderer.Render(request, positionedTags);
-        if (!imageResult.IsSuccess)
-            return Result<GenerationContext>.Failure(imageResult.Error!);
 
-        image = imageResult.Value!;
-        return Result<GenerationContext>.Success(this);
-    }
+    public Result<GenerationContext> Render(ICloudRenderer renderer) =>
+        renderer.Render(request, positionedTags)
+            .Bind(img =>
+            {
+                image = img;
+                return Result<GenerationContext>.Success(this);
+            });
 
     public Result<GenerationContext> Save(IImageSaver saver)
     {
         if (image is null)
             return Result<GenerationContext>.Failure("Image not generated");
 
-        var savingResult = saver.Save(request, image);
-        if (!savingResult.IsSuccess)
-            return Result<GenerationContext>.Failure(savingResult.Error!);
-
-        image.Dispose();
-        image = null;
-
-        return Result<GenerationContext>.Success(this);
+        return saver.Save(request, image)
+            .Bind(_ =>
+            {
+                image.Dispose();
+                image = null;
+                return Result<GenerationContext>.Success(this);
+            });
     }
 }

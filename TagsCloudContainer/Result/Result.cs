@@ -21,6 +21,26 @@ public class Result<T>
 
     public static Result<T> Success(T value) => new(value);
     public static Result<T> Failure(string error) => new(error);
+
+    public const string UnknownError = "Unknown error";
+
+    public Result<TResult> Bind<TResult>(Func<T, Result<TResult>> func)
+    {
+        return !IsSuccess ? Result<TResult>.Failure(Error ?? UnknownError) : func(Value!);
+    }
     
-    public static string UnknownError = "Unknown error";
+    public Result<TResult> Map<TResult>(Func<T, TResult> func)
+    {
+        return !IsSuccess ? Result<TResult>.Failure(Error ?? UnknownError) : Result<TResult>.Success(func(Value!));
+    }
+
+    public Result<T> OnFailure(Action<string> action)
+    {
+        if (!IsSuccess && Error != null)
+            action(Error);
+
+        return this;
+    }
+    
+    public T ValueOr(T defaultValue) => IsSuccess ? Value! : defaultValue;
 }

@@ -1,6 +1,7 @@
 using System.Text;
 using FluentAssertions;
 using TagsCloudContainer.Core;
+using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Core.Interfaces;
 using TagsCloudContainer.Core.WordSources;
 

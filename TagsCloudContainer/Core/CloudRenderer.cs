@@ -11,37 +11,41 @@ namespace TagsCloudContainer.Core;
 
 public class CloudRenderer : ICloudRenderer
 {
-    public Result<Image<Rgba32>> Render(TagCloudGenerationRequest request, IReadOnlyCollection<PositionedTag> positionedTags)
+    public Result<Image<Rgba32>> Render(
+        TagCloudGenerationRequest request,
+        IReadOnlyCollection<PositionedTag> positionedTags)
     {
-        var s = request.LayoutSettings;
-        var img = new Image<Rgba32>(s.ImageSize.Width, s.ImageSize.Height, request.BackgroundColor);
-
         if (positionedTags.Count == 0)
-            return Result<Image<Rgba32>>.Failure("Cannot render tag cloud: no tags to render.");
+            return Result<Image<Rgba32>>.Failure(
+                "Cannot render tag cloud: no tags to render.");
 
-        var ctxResult = BuildRenderContext(request, positionedTags);
-        if (!ctxResult.IsSuccess)
-            return Result<Image<Rgba32>>.Failure(ctxResult.Error);
+        var s = request.LayoutSettings;
+        var img = new Image<Rgba32>(
+            s.ImageSize.Width,
+            s.ImageSize.Height,
+            request.BackgroundColor);
 
-        var ctx = ctxResult.Value;
-        
-        img.Mutate(i =>
-        {
-            foreach (var (tag, rect, fontSize) in positionedTags)
+        return BuildRenderContext(request, positionedTags)
+            .Bind(ctx =>
             {
-                var font = ctx.FontFamily.CreateFont(fontSize);
-                var origin = GetCenteredOrigin(tag.Word, font, rect);
-                var options = new RichTextOptions(font)
+                img.Mutate(i =>
                 {
-                    Origin = origin,
-                    WrappingLength = float.PositiveInfinity
-                };
+                    foreach (var (tag, rect, fontSize) in positionedTags)
+                    {
+                        var font = ctx.FontFamily.CreateFont(fontSize);
+                        var origin = GetCenteredOrigin(tag.Word, font, rect);
+                        var options = new RichTextOptions(font)
+                        {
+                            Origin = origin,
+                            WrappingLength = float.PositiveInfinity
+                        };
 
-                i.DrawText(options, tag.Word, ctx.TextColor);
-            }
-        });
+                        i.DrawText(options, tag.Word, ctx.TextColor);
+                    }
+                });
 
-        return Result<Image<Rgba32>>.Success(img);
+                return Result<Image<Rgba32>>.Success(img);
+            });
     }
 
     private static Result<RenderContext> BuildRenderContext(
@@ -55,7 +59,7 @@ public class CloudRenderer : ICloudRenderer
 
         var fontFamilyResult = FontFamilyResolver.Resolve(request.Font);
         if (!fontFamilyResult.IsSuccess)
-            return Result<RenderContext>.Failure(fontFamilyResult.Error);
+            return Result<RenderContext>.Failure(fontFamilyResult.Error ?? Result<RenderContext>.UnknownError);
         
         var fontFamily = fontFamilyResult.Value;
         return Result<RenderContext>.Success(

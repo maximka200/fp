@@ -1,3 +1,4 @@
+using TagsCloudContainer.Core.Domains;
 using TagsCloudContainer.Result;
 
 namespace TagsCloudContainer.Core.Interfaces;

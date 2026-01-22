@@ -18,38 +18,49 @@ public class CloudPositionedTags(
             new InvertedFrequencySizingStrategy()
         }.ToDictionary(s => s.Inverted);
 
-    public Result<IEnumerable<PositionedTag>> GetPositionedTags(IEnumerable<Tag> tags, float minFontSize,
-        float maxFontSize, bool invertSizeByFrequency, FontFamily ff)
+    public Result<IEnumerable<PositionedTag>> GetPositionedTags(
+        IEnumerable<Tag> tags,
+        float minFontSize,
+        float maxFontSize,
+        bool invertSizeByFrequency,
+        FontFamily ff)
     {
         var tagList = tags.ToList();
-        
+
         if (!tagList.Any())
             return Result<IEnumerable<PositionedTag>>.Failure("Tag list is empty.");
 
-        var freqRangeResult = FrequencyRange.TryGet(tagList).GetOrYieldBreak();
-        if (!freqRangeResult.IsSuccess)
-            return Result<IEnumerable<PositionedTag>>.Failure(freqRangeResult.Error ?? Result<IEnumerable<PositionedTag>>.UnknownError);
-        
-        var (minFreq, maxFreq) = freqRangeResult.Value;
-        var fontResult = FontRange.Normalize(minFontSize, maxFontSize);
-        if (!fontResult.IsSuccess)
-            return Result<IEnumerable<PositionedTag>>.Failure(fontResult.Error ?? Result<IEnumerable<PositionedTag>>.UnknownError);
-        
-        var (minFont, maxFont) = fontResult.Value;
-        
-        var strategy = Strategies[invertSizeByFrequency];
-        
-        var result = new List<PositionedTag>();
-        foreach (var tag in strategy.Order(tagList))
-        {
-            var fontSize = GetFontSize(tag.Frequency, minFont, maxFont, minFreq, maxFreq, strategy);
-            var size = tagSizeCalculator.GetSize(tag, fontSize, ff);
-            var rect = cloudLayouter.PutNextRectangle(size);
-            result.Add(new PositionedTag(tag, rect, fontSize));
-        }
-        
-        return Result<IEnumerable<PositionedTag>>.Success(result);
+        return FrequencyRange.Get(tagList)
+            .Bind(freq =>
+                FontRange.Normalize(minFontSize, maxFontSize)
+                    .Map(font =>
+                    {
+                        var (minFreq, maxFreq) = freq;
+                        var (minFont, maxFont) = font;
+
+                        var strategy = Strategies[invertSizeByFrequency];
+
+                        return strategy.Order(tagList)
+                            .Select(tag =>
+                            {
+                                var fontSize = GetFontSize(
+                                    tag.Frequency,
+                                    minFont,
+                                    maxFont,
+                                    minFreq,
+                                    maxFreq,
+                                    strategy);
+
+                                var size = tagSizeCalculator.GetSize(tag, fontSize, ff);
+                                var rect = cloudLayouter.PutNextRectangle(size);
+
+                                return new PositionedTag(tag, rect, fontSize);
+                            })
+                            .ToList()
+                            .AsEnumerable();
+                    }));
     }
+
 
     private static float GetFontSize(int frequency, float minFontSize,
         float maxFontSize, int minFreq, int maxFreq,

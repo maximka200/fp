@@ -16,23 +16,33 @@ public class CompositeWordsPreprocessor(
             if (string.IsNullOrWhiteSpace(word))
                 continue;
 
-            foreach (var filter in filters)
-            {
-                var keepResult = filter.ShouldKeep(word);
+            var keepResult = ShouldKeepWord(word);
 
-                if (!keepResult.IsSuccess)
-                    return Result<IEnumerable<string>>.Failure(
-                        keepResult.Error ?? Result<IEnumerable<string>>.UnknownError);
+            if (!keepResult.IsSuccess)
+                return Result<IEnumerable<string>>.Failure(
+                    keepResult.Error ?? Result<IEnumerable<string>>.UnknownError);
 
-                if (!keepResult.Value)
-                    goto SkipWord;
-            }
-
-            result.Add(word);
-
-            SkipWord: ;
+            if (keepResult.Value)
+                result.Add(word);
         }
 
         return Result<IEnumerable<string>>.Success(result);
+    }
+    
+    private Result<bool> ShouldKeepWord(string word)
+    {
+        foreach (var filter in filters)
+        {
+            var keepResult = filter.ShouldKeep(word);
+
+            if (!keepResult.IsSuccess)
+                return Result<bool>.Failure(
+                    keepResult.Error ?? Result<bool>.UnknownError);
+
+            if (!keepResult.Value)
+                return Result<bool>.Success(false);
+        }
+
+        return Result<bool>.Success(true);
     }
 }

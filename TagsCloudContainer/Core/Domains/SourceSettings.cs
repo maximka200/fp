@@ -1,4 +1,4 @@
-namespace TagsCloudContainer.Core;
+namespace TagsCloudContainer.Core.Domains;
 
 public class SourceSettings(string path, string format)
 {

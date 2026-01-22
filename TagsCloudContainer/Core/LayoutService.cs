@@ -10,18 +10,14 @@ public class LayoutService(ICloudPositionedTags layouter) : ILayoutService
 
     public Result<IReadOnlyCollection<PositionedTag>> Layout(TagCloudGenerationRequest request, IReadOnlyCollection<Tag> tags)
     {
-        var ffResult = FontFamilyResolver.Resolve(request.Font);
-        if (!ffResult.IsSuccess)
-            return Result<IReadOnlyCollection<PositionedTag>>.Failure(ffResult.Error ?? Result<IReadOnlyCollection<PositionedTag>>.UnknownError);
-        var ff = ffResult.Value;
-        var settings = request.LayoutSettings;
-
-        var posTagsResult = layouter
-            .GetPositionedTags(tags, settings.MinFontSize, settings.MaxFontSize, request.Desc, ff);
-        if (!posTagsResult.IsSuccess)
-            return Result<IReadOnlyCollection<PositionedTag>>.Failure(posTagsResult.Error ?? Result<IReadOnlyCollection<PositionedTag>>.UnknownError);
-        
-        var posTags = posTagsResult.Value.ToList();
-        return Result<IReadOnlyCollection<PositionedTag>>.Success(posTags);
+        return FontFamilyResolver.Resolve(request.Font)
+            .Bind(ff =>
+                layouter.GetPositionedTags(tags, 
+                        request.LayoutSettings.MinFontSize, 
+                        request.LayoutSettings.MaxFontSize, 
+                        request.Desc, 
+                        ff)
+                    .Map(posTags => posTags.ToList() as IReadOnlyCollection<PositionedTag>)
+            );
     }
 }
